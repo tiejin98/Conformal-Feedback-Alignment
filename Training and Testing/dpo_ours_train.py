@@ -18,7 +18,7 @@ tokenizer.pad_token = tokenizer.eos_token
 model = AutoModelForCausalLM.from_pretrained(model_name,torch_dtype=torch.float16,cache_dir="/home/Model")
 
 # Create a config for DPO
-config = DPOConfig(output_dir="/home/Model/Llama2-7b-RLUF", per_device_train_batch_size=2,
+config = DPOConfig(output_dir="/home/Model/Llama2-7b-RLUF", per_device_train_batch_size=2, learning_rate=1.5e-6,
                    logging_steps=1500,save_steps=1500,save_total_limit=2)
 
 # Initialize the DPOTrainer
