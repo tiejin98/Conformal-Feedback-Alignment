@@ -4,10 +4,10 @@ import pickle
 weight_dict = {}
 
 
-with open('./Generation With CP/prediction_set_quantile0.2_threshold0.7.json', 'r') as file:
+with open('./Generation With CP/prediction_set_quantile0.2_threshold0.7_llama2.json', 'r') as file:
     eight_coverage = json.load(file)
 
-with open('./Generation With CP/prediction_set_quantile0.5_threshold0.7.json', 'r') as file:
+with open('./Generation With CP/prediction_set_quantile0.5_threshold0.7_llama2.json', 'r') as file:
     five_coverage = json.load(file)
 
 for gen_list in five_coverage:

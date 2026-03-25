@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "conformal-feedback-alignment"
+version = "0.1.0"
+description = "RLUF: Reinforcement Learning with Uncertainty Feedback via Conformal Prediction for DPO"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+authors = [
+    {name = "Tiejin Chen"},
+]
+keywords = [
+    "conformal-prediction",
+    "reinforcement-learning",
+    "dpo",
+    "llm",
+    "uncertainty",
+    "alignment",
+    "rlhf",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "torch>=2.3.0",
+    "transformers>=4.51.0",
+    "trl>=0.7.0",
+    "datasets>=3.5.0",
+    "openai>=0.28.1",
+    "gensim>=4.3.0",
+    "alpaca-farm",
+    "accelerate>=0.30.0",
+    "tqdm",
+    "numpy",
+    "pyyaml",
+    "python-dotenv",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff",
+    "build",
+    "twine",
+]
+
+[project.urls]
+Homepage = "https://github.com/tiejin98/Conformal-Feedback-Alignment"
+Repository = "https://github.com/tiejin98/Conformal-Feedback-Alignment"
+Issues = "https://github.com/tiejin98/Conformal-Feedback-Alignment/issues"
+
+[project.scripts]
+cfa = "cfa.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["cfa*"]
+
+[tool.setuptools.package-data]
+cfa = ["../configs/*.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py39"
+line-length = 120

@@ -1,0 +1,12 @@
+torch>=2.3.0
+transformers>=4.51.0
+openai>=0.28.1
+datasets>=3.5.0
+trl>=0.7.0
+gensim>=4.3.0
+alpaca-farm
+accelerate>=0.30.0
+tqdm
+numpy
+pyyaml
+python-dotenv

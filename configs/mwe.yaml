@@ -1,0 +1,60 @@
+# =============================================================================
+# Minimal Working Example Configuration
+# =============================================================================
+# Reduced parameters for quick testing. Runs end-to-end in minutes.
+
+model:
+  base_model: "meta-llama/Llama-2-7b-chat-hf"
+  base_model_plain: "meta-llama/Llama-2-7b-hf"
+  sft_output_dir: "./outputs/mwe/models/llama2-sft"
+  sft_checkpoint: "./outputs/mwe/models/llama2-sft/checkpoint-100"
+  dpo_output_dir: "./outputs/mwe/models/Llama2-7b-RLUF"
+  cache_dir: "./models_cache"
+
+data:
+  dataset: "openai/summarize_from_feedback"
+  subset: "axis"
+  output_dir: "./outputs/mwe"
+  max_post_words: 200
+
+sft:
+  num_train_epochs: 1
+  per_device_train_batch_size: 1
+  learning_rate: 2.0e-5
+  save_steps: 100
+  save_total_limit: 1
+  logging_steps: 10
+  max_length: 512
+  bf16: true
+
+generation:
+  calibration_size: 5
+  sampling_num: 5
+  num_return_sequences: 1
+  max_new_tokens: 64
+  temperature: 0.35
+  alpha: 0.4
+  seed: 42
+  device: "cuda:0"
+
+conformal:
+  quantile_bars: [0.2, 0.5]
+  accuracy_threshold: 0.7
+  weights_range: [0, 0.5, 1.0]
+  random_count: 5
+  split_num: 3
+  similarity_vector_size: 100
+
+dpo:
+  per_device_train_batch_size: 1
+  learning_rate: 1.5e-6
+  logging_steps: 50
+  save_steps: 50
+  save_total_limit: 1
+
+evaluation:
+  model: "gpt-4o"
+  rate_limit_pause: 0.3
+
+logging:
+  level: "DEBUG"

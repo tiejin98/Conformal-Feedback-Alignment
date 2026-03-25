@@ -1,0 +1,69 @@
+# =============================================================================
+# Conformal Feedback Alignment - Default Configuration
+# =============================================================================
+# Copy this file and modify paths/keys for your environment.
+# API keys should be set via environment variables (see .env.example).
+
+# --- Model Paths ---
+model:
+  base_model: "meta-llama/Llama-2-7b-chat-hf"
+  base_model_plain: "meta-llama/Llama-2-7b-hf"  # for DPO training (non-chat)
+  sft_output_dir: "./models/llama2-sft"
+  sft_checkpoint: "./models/llama2-sft/checkpoint-1500"
+  dpo_output_dir: "./models/Llama2-7b-RLUF"
+  cache_dir: "./models_cache"
+
+# --- Data ---
+data:
+  dataset: "openai/summarize_from_feedback"
+  subset: "axis"
+  output_dir: "./outputs"
+  max_post_words: 500
+
+# --- SFT Training ---
+sft:
+  num_train_epochs: 5
+  per_device_train_batch_size: 2
+  learning_rate: 2.0e-5
+  save_steps: 500
+  save_total_limit: 2
+  logging_steps: 100
+  max_length: 1024
+  bf16: true
+
+# --- Generation ---
+generation:
+  calibration_size: 50
+  sampling_num: 60
+  num_return_sequences: 1
+  max_new_tokens: 128
+  temperature: 0.35
+  alpha: 0.4
+  seed: 42
+  device: "cuda:0"
+
+# --- Conformal Prediction ---
+conformal:
+  quantile_bars: [0.2, 0.5]
+  accuracy_threshold: 0.7
+  weights_range: [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
+  random_count: 50
+  split_num: 3
+  similarity_vector_size: 200
+
+# --- DPO Training ---
+dpo:
+  per_device_train_batch_size: 2
+  learning_rate: 1.5e-6
+  logging_steps: 1500
+  save_steps: 1500
+  save_total_limit: 2
+
+# --- Evaluation ---
+evaluation:
+  model: "gpt-4o"
+  rate_limit_pause: 0.3
+
+# --- Logging ---
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR

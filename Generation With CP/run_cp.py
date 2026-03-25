@@ -12,9 +12,8 @@ from gensim.models import FastText
 from gensim.models.word2vec import LineSentence
 import ast
 import random
-# from nltk.translate.bleu_score import sentence_bleu
+from tqdm import tqdm
 
-TEST_number_of_freq1 = 0
 best_av_size = 100
 best_params = [100, 100]
 
@@ -29,8 +28,18 @@ results = []
 similarity_model = FastText(sentences=common_texts, vector_size=200, min_count=1)
 
 
+def new_CP_score(dict_of_freq, weight, weight_2):
+    """Compute conformal prediction nonconformity scores for each response.
 
-def new_CP_score(dict_of_freq, weight):
+    Args:
+        dict_of_freq: Dict mapping response text to frequency count.
+        weight: Weight for the entropy term.
+        weight_2: Weight for the similarity penalty term.
+
+    Returns:
+        Tuple of (dict_of_score, normalized_entropy) where dict_of_score maps
+        each response to its nonconformity score.
+    """
     dict_of_score = dict_of_freq.copy()
     total_frequency = sum(dict_of_freq.values())
 
@@ -43,20 +52,22 @@ def new_CP_score(dict_of_freq, weight):
 
     rank_1_response = ""
     for rank, (key, value) in enumerate(dict_of_score.items()):
-        if rank == 1:
+        if rank == 0:
             rank_1_response = key
             dict_of_score[key] = 10 - value / total_frequency * 10 + normalized_entropy / 2 * weight
         else:
             dict_of_score[key] = 10 - value / total_frequency * 10 + normalized_entropy / 2 * weight
-            dict_of_score[key] -= similarity_model.wv.similarity(key, rank_1_response) * weight_2
-
+            try:
+                dict_of_score[key] -= similarity_model.wv.similarity(key, rank_1_response) * weight_2
+            except KeyError:
+                pass
 
     return dict_of_score, normalized_entropy
+
 
 def calculate_quantile(n, alpha):
     result = np.ceil((n + 1) * (1 - alpha)) / n
     return result
-
 
 
 def remove_punctuation(input_string):
@@ -95,51 +106,26 @@ def process_list_of_dicts(input_list_of_dicts):
 
 
 def apply_conformal_prediction(test_generation, best_params, quantile_value):
+    """Apply conformal prediction to test set using calibrated parameters.
+
+    Args:
+        test_generation: List of frequency dicts for test samples.
+        best_params: [weight, weight_2] tuple of best hyperparameters.
+        quantile_value: Calibrated quantile threshold.
+
+    Returns:
+        List of prediction sets (lists of response strings).
+    """
     weight, weight_2 = best_params
     predicted_answers = []
 
-    # Define a local version of new_CP_score that accepts weight_2
-    def new_CP_score_local(dict_of_freq, weight, weight_2):
-        dict_of_score = dict_of_freq.copy()
-        total_frequency = sum(dict_of_freq.values())
-
-        numerator = 0
-        for key, value in dict_of_score.items():
-            if total_frequency > 0:
-                numerator += - (value / total_frequency) * math.log(value / total_frequency)
-        if total_frequency == 1 or total_frequency == 0:
-            total_frequency = 2
-        normalized_entropy = numerator / math.log(total_frequency)
-
-        rank_1_response = ""
-        for rank, (key, value) in enumerate(dict_of_score.items()):
-            if rank == 0:  # ranks start at 0
-                rank_1_response = key
-                dict_of_score[key] = 10 - (value / total_frequency) * 10 + (normalized_entropy / 2) * weight
-            else:
-                similarity = similarity_model.wv.similarity(key, rank_1_response) if rank_1_response in similarity_model.wv else 0
-                dict_of_score[key] = 10 - (value / total_frequency) * 10 + (normalized_entropy / 2) * weight
-                dict_of_score[key] -= similarity * weight_2
-
-        return dict_of_score, normalized_entropy
-
-    for dict_of_freq in tqdm.tqdm(test_generation):
-        # Compute the conformal prediction scores using the local new_CP_score
-        result, _ = new_CP_score_local(dict_of_freq, weight, weight_2)
-
+    for dict_of_freq in tqdm(test_generation):
+        result, _ = new_CP_score(dict_of_freq, weight, weight_2)
         predicted_answer = {key: score for key, score in result.items() if score <= quantile_value}
         predicted_answers.append(list(predicted_answer.keys()))
 
     return predicted_answers
 
-
-def calculate_quantile_pos(n, alpha):
-    result = np.ceil((n + 1) * (1 - alpha)) / n
-    return result
-
-def calculate_quantile(n, alpha):
-    result = np.ceil((n + 1) * (1 - alpha)) / n
-    return result
 
 def list_of_lists_to_frequency_dicts(list_of_lists):
     '''
@@ -154,29 +140,6 @@ def list_of_lists_to_frequency_dicts(list_of_lists):
         frequency_dicts.append(sorted_frequency)
     return frequency_dicts
 
-def new_CP_score(dict_of_freq, weight):
-    dict_of_score = dict_of_freq.copy()
-    total_frequency = sum(dict_of_freq.values())
-
-    numerator = 0
-    for key, value in dict_of_score.items():
-        numerator += - value / total_frequency * math.log(value / total_frequency)
-    if total_frequency == 1 or total_frequency == 0:
-        total_frequency = 2
-    normalized_entropy = numerator / math.log(total_frequency)
-
-    rank_1_response = ""
-    for rank, (key, value) in enumerate(dict_of_score.items()):
-        if rank == 1:
-            rank_1_response = key
-            dict_of_score[key] = 10 - value / total_frequency * 10 + normalized_entropy / 2 * weight
-        else:
-            dict_of_score[key] = 10 - value / total_frequency * 10 + normalized_entropy / 2 * weight
-            dict_of_score[key] -= similarity_model.wv.similarity(key, rank_1_response) * weight_2
-
-    return dict_of_score, normalized_entropy
-
-
 
 weights = [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
 weights_2 = [0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2, 1.4, 1.6, 1.8, 2.0]
@@ -184,6 +147,7 @@ best_quantilte_value = 0
 for weight in weights:
     for weight_2 in weights_2:
         print(f"weight: {weight}, weight_2: {weight_2}")
+        TEST_number_of_freq1 = 0
         cali_answer = []
         test_answer = []
         correct_answers = []
@@ -233,8 +197,6 @@ for weight in weights:
                 if index % num == 0:
                     # Extract context and accuracy
                     correct_dict = correct_answers_shuffled[index]
-                    # if len(correct_dict) != 1:
-                    #     raise ValueError(f"Expected exactly one key-value pair in correct_dict, got {len(correct_dict)}")
                     context, accuracy = next(iter(correct_dict.items()))
 
                     # Determine correctness based on accuracy
@@ -243,7 +205,7 @@ for weight in weights:
                     if is_correct:
                         if context in dict_of_freq:
                             # Correct answer is present
-                            nonconformity_score = new_CP_score(dict_of_freq, weight)[0][context]
+                            nonconformity_score = new_CP_score(dict_of_freq, weight, weight_2)[0][context]
                             if (dict_of_freq[context] == 1):
                                 TEST_number_of_freq1 += 1
                         else:
@@ -262,7 +224,7 @@ for weight in weights:
                     test_set.append(generated_answers_freq[index])
                     test_correct_answers.append(correct_answers_shuffled[index])
 
-            quantile = calculate_quantile_pos(bar, quantile_bar) * 100
+            quantile = calculate_quantile(bar, quantile_bar) * 100
             sorted_nonconformity_scores = sorted(nonconformity_scores, reverse=True)
 
             quantile_value = np.percentile(sorted_nonconformity_scores, quantile)
@@ -272,14 +234,12 @@ for weight in weights:
             predicted_answers = []
 
             for index, dict_of_freq in enumerate(val_set):
-                # Use new_CP_score as in original code
-                result, NE = new_CP_score(dict_of_freq, weight)
+                result, NE = new_CP_score(dict_of_freq, weight, weight_2)
                 predicted_answer = {key: score for key, score in result.items() if score <= quantile_value}
                 predicted_answers_val.append(list(predicted_answer.keys()))
 
             for index, dict_of_freq in enumerate(test_set):
-                # Use new_CP_score as in original code
-                result, NE = new_CP_score(dict_of_freq, weight)
+                result, NE = new_CP_score(dict_of_freq, weight, weight_2)
                 predicted_answer = {key: score for key, score in result.items() if score <= quantile_value}
                 predicted_answers.append(list(predicted_answer.keys()))
 
@@ -302,8 +262,6 @@ for weight in weights:
             for k, sublist in enumerate(predicted_answers):
                 total_question += 1
                 correct_dict = test_correct_answers[k]
-                # if len(correct_dict) != 1:
-                #     raise ValueError(f"Expected exactly one key-value pair in correct_dict, got {len(correct_dict)}")
                 context, accuracy = next(iter(correct_dict.items()))
                 is_correct = accuracy >= 0.7
 
@@ -312,10 +270,8 @@ for weight in weights:
                         total_correct += 1
                         conditional_coverage[len(sublist)] += 1
                     else:
-                        # Correct answer not in predictions, do not count as correct
                         pass
                 else:
-                    # Incorrect answer, do not count as correct
                     pass
 
                 total_size += len(sublist)
@@ -363,7 +319,5 @@ with open('generation_test_llama2.txt', 'r', encoding='utf-8') as file:
 
 prediction_set = apply_conformal_prediction(dict_list,best_params,best_quantilte_value)
 
-with open(f"prediction_set_quantile{quantile_bar}_llama2.json", "w", encoding="utf-8") as file:
+with open(f"prediction_set_quantile{quantile_bar}_threshold0.7_llama2.json", "w", encoding="utf-8") as file:
     json.dump(prediction_set, file, ensure_ascii=False, indent=4)
-
-

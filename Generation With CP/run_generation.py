@@ -204,7 +204,7 @@ with open("generation_llama2_accuracy.txt", "w", encoding="utf-8") as file_acc:
 #     file2.write(str(calib_answers))
 #     file2.write("\n")
 
-print("Calibration set generation done)
+print("Calibration set generation done")
 
 
 response_dict_final = {}
@@ -235,4 +235,4 @@ with open("generation_test_llama2.txt", "w", encoding="utf-8") as file:
 with open('response_dict_llama2.pkl', 'wb') as f:
     pickle.dump(response_dict_final, f)
 print(response_dict_final)
-print("Done Test)
+print("Done Test")
