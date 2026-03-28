@@ -4,7 +4,7 @@
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Conformal Feedback Alignment — using **Conformal Prediction** to quantify LLM generation uncertainty and integrate it as per-example weights into **DPO** training. This enables the model to learn more from high-confidence preference pairs and less from uncertain ones.
+Conformal Feedback Alignment — using **Conformal Prediction** to quantify LLM generation uncertainty and integrate it as per-example weights into training. This enables the model to learn more from high-confidence preference pairs and less from uncertain ones.
 
 > **Paper:** [Conformal Feedback Alignment: Quantifying Answer-Level Reliability for Robust LLM Alignment](https://aclanthology.org/2026.findings-eacl.184/) (Findings of EACL 2026)
 
