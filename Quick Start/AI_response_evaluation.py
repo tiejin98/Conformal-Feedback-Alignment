@@ -4,11 +4,12 @@ import time
 import pickle
 import numpy as np
 import openai
+from openai import OpenAI
 from tqdm import tqdm
 # --------------------------------------------------
 # 1. Configure your API key
 # --------------------------------------------------
-openai.api_key = "xxx"
+client = OpenAI(api_key="xxx")
 MODEL = "gpt-4o"
 RATE_LIMIT_PAUSE = 0.3
 
@@ -42,7 +43,7 @@ scores = {}
 def request_scores_once(prompt: str) -> str | None:
     """Call the model once and return its raw text (or None on exception)."""
     try:
-        resp = openai.chat.completions.create(
+        resp = client.chat.completions.create(
             model=MODEL,
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
@@ -51,11 +52,11 @@ def request_scores_once(prompt: str) -> str | None:
             temperature=0.0,
         )
         return resp.choices[0].message.content
-    except openai.error.RateLimitError:
+    except openai.RateLimitError:
         print("Rate-limit hit; sleeping 5 s and retrying once …")
         time.sleep(5)
         try:
-            resp = openai.chat.completions.create(
+            resp = client.chat.completions.create(
                 model=MODEL,
                 messages=[
                     {"role": "system", "content": SYSTEM_PROMPT},

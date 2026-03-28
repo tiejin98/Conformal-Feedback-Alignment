@@ -51,43 +51,105 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
-### 1. Configure
+The `Quick Start/` folder provides pre-processed sample data so you can **skip Stages 1–2** and directly run training and evaluation. All files are based on **Llama-2-7b** on the **Summarization** task.
+
+We provide three categories of files: the **training data** (already weighted by conformal uncertainty), the **generated outputs** from both RLUF and base DPO models on the test set, and the **evaluation scores** from GPT-4o — so you can either retrain from scratch or directly inspect the results without running any inference.
+
+| File | Description |
+|------|-------------|
+| `dpo_data_llama2_withuncertainty.zip` | DPO training data (104,614 examples) with `prompt`, `chosen`, `rejected`, and `weight` fields — extract before use |
+| `test_dict_question.pkl` | 639 test-set questions |
+| `test_dict_RLUF.pkl` | Model outputs from the RLUF-trained model |
+| `test_dict_baseDPO.pkl` | Model outputs from the base DPO model (for comparison) |
+| `evaluation_scores_RLUF.pkl` | Pre-computed GPT-4o evaluation scores for RLUF |
+| `evaluation_scores_baseDPO.pkl` | Pre-computed GPT-4o evaluation scores for base DPO |
+
+### Option A: Using Standalone Scripts
+
+Run training and evaluation directly with the scripts in `Quick Start/`:
 
 ```bash
-# Set up your API keys
+cd "Quick Start"
+unzip dpo_data_llama2_withuncertainty.zip
+
+# Step 1: Train — set your HuggingFace token in dpo_ours_train.py first
+python dpo_ours_train.py
+
+# Step 2: Evaluate — set your OpenAI API key in AI_response_evaluation.py first
+python AI_response_evaluation.py
+
+# Step 3: Read pre-computed scores (no API key needed)
+python read_evaluation.py
+```
+
+### Option B: Using the `cfa` CLI
+
+Set up the output directory structure that `cfa` expects, then use the CLI:
+
+```bash
+pip install -e .
+
+# Set up API keys
 cp .env.example .env
-# Edit .env:
-#   OPENAI_API_KEY=sk-...
-#   HF_TOKEN=hf_...
+# Edit .env: OPENAI_API_KEY=sk-..., HF_TOKEN=hf_...
 
-# Customize the config (or use the default)
-cp configs/default.yaml configs/my_config.yaml
-# Edit configs/my_config.yaml with your model paths
+# Prepare data in cfa output structure
+mkdir -p outputs/feedback outputs/inference outputs/evaluation
+cd "Quick Start"
+unzip dpo_data_llama2_withuncertainty.zip
+cp dpo_data_llama2_withuncertainty.json ../outputs/feedback/
+cp test_dict_question.pkl test_dict_RLUF.pkl test_dict_baseDPO.pkl ../outputs/inference/
+cp evaluation_scores_RLUF.pkl evaluation_scores_baseDPO.pkl ../outputs/evaluation/
+cd ..
+
+# Train
+cfa train --config configs/default.yaml
+
+# Evaluate (or skip if using the pre-computed scores above)
+cfa evaluate --config configs/default.yaml
 ```
 
-### 2. Run
+### Expected Results
+
+The pre-computed scores in the provided `.pkl` files reproduce the following results:
+
+| Model | Acc | Rel | Comp | Expr | Overall |
+|-------|-----|-----|------|------|---------|
+| Base DPO | 6.359 | 7.319 | 5.351 | 7.144 | 6.543 |
+| **RLUF (Ours)** | **6.462** | **7.547** | **5.391** | **7.421** | **6.705** |
+
+RLUF consistently outperforms base DPO across all four dimensions on the summarization task.
+
+## Full Pipeline
+
+To run the full pipeline from scratch (all three stages), configure your environment and use the `cfa` CLI:
 
 ```bash
-# Run individual stages:
-cfa sft --config configs/my_config.yaml
-cfa generate --config configs/my_config.yaml
-cfa calibrate --config configs/my_config.yaml --quantile 0.2
-cfa calibrate --config configs/my_config.yaml --quantile 0.5
-cfa feedback --config configs/my_config.yaml
-cfa assign-weights --config configs/my_config.yaml
-cfa train --config configs/my_config.yaml
-cfa infer --config configs/my_config.yaml
-cfa evaluate --config configs/my_config.yaml
+# 1. Set up your API keys
+cp .env.example .env
+# Edit .env: OPENAI_API_KEY=sk-..., HF_TOKEN=hf_...
 
-# Or run the full pipeline:
-cfa run-all --config configs/my_config.yaml
+# 2. Run individual stages:
+cfa sft --config configs/default.yaml          # Stage 1a: SFT fine-tuning
+cfa generate --config configs/default.yaml     # Stage 1b: Multi-sample generation + GPT scoring
+cfa calibrate --config configs/default.yaml    # Stage 1c: Conformal prediction calibration
+cfa feedback --config configs/default.yaml     # Stage 2a: Pairwise preference annotation
+cfa assign-weights --config configs/default.yaml  # Stage 2b: Assign uncertainty weights
+cfa train --config configs/default.yaml        # Stage 3a: Weighted DPO training
+cfa infer --config configs/default.yaml        # Stage 3b: Test set inference
+cfa evaluate --config configs/default.yaml     # Stage 3c: GPT-4o evaluation scoring
+
+# Or run everything at once:
+cfa run-all --config configs/default.yaml
 ```
 
-### 3. Run Tests
+You can also run unit tests to verify the utility functions:
 
 ```bash
 pytest tests/ -v
 ```
+
+This runs tests for CP scoring, text processing, I/O, and config loading (no GPU required, finishes in seconds).
 
 ## Pipeline Stages
 
@@ -109,7 +171,7 @@ Lower score = higher confidence = more likely in prediction set.
 
 | Step | Command | Description | Output |
 |------|---------|-------------|--------|
-| 2a | `cfa feedback` | Pairwise preference annotation via AlpacaFarm | DPO pairs (JSONL) |
+| 2a | `cfa feedback` | Pairwise preference annotation via GPT | DPO pairs (JSONL) |
 | 2b | `cfa assign-weights` | Weight pairs by CP prediction set membership | Weighted DPO pairs |
 
 **Weight assignment:**
@@ -224,7 +286,6 @@ Conformal-Feedback-Alignment/
 - `datasets>=3.5.0`
 - `openai>=0.28.1`
 - `gensim>=4.3.0`
-- `alpaca-farm`
 - `accelerate>=0.30.0`
 
 ## Citation

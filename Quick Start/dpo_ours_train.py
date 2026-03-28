@@ -2,10 +2,10 @@ import torch
 from datasets import load_dataset
 from transformers import AutoTokenizer,AutoModelForCausalLM
 from trl import DPOConfig
-from customize_dpo import WeightedDPOTrainer
+from cfa.models.weighted_dpo import WeightedDPOTrainer
 
 # Load the new DPO-format dataset
-dataset = load_dataset("json", data_files="./AI Feedback/dpo_data_llama2_withuncertainty.json",split="train")
+dataset = load_dataset("json", data_files="dpo_data_llama2_withuncertainty.json",split="train")
 
 Access = "xxxxxx"
 

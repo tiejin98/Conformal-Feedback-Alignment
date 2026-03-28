@@ -1,10 +1,10 @@
-"""Stage 2a: AI pairwise preference annotation using AlpacaFarm."""
+"""Stage 2a: AI pairwise preference annotation."""
 
 import logging
 import itertools
-import openai
 from cfa.config import get_output_dir
 from cfa.utils.io import load_pickle, save_jsonl
+from cfa.utils.pairwise_annotator import annotate_pairs
 
 logger = logging.getLogger(__name__)
 
@@ -13,16 +13,14 @@ def run_feedback(config: dict):
     """Generate pairwise preference annotations for DPO training.
 
     Loads test set responses, creates all pairwise combinations per prompt,
-    and uses AlpacaFarm's PairwiseAutoAnnotator (GPT-4 backend) to determine
-    preferences. Outputs DPO-format data with prompt/chosen/rejected.
+    and uses GPT to determine preferences. Outputs DPO-format data with
+    prompt/chosen/rejected.
 
     Args:
         config: Configuration dictionary.
     """
     gen_dir = get_output_dir(config, "generation")
     fb_dir = get_output_dir(config, "feedback")
-
-    openai.api_key = config["openai_api_key"]
 
     # Load test set responses
     response_dict = load_pickle(gen_dir / "response_dict_llama2.pkl")
@@ -45,10 +43,12 @@ def run_feedback(config: dict):
 
     logger.info(f"Created {len(adjust_format)} pairwise comparisons")
 
-    # Run AlpacaFarm annotation
-    from alpaca_farm.auto_annotations import PairwiseAutoAnnotator
-    annotator = PairwiseAutoAnnotator()
-    annotated = annotator.annotate_pairs(adjust_format)
+    # Run pairwise annotation
+    annotated = annotate_pairs(
+        adjust_format,
+        api_key=config["openai_api_key"],
+        model=config.get("feedback", {}).get("model", "gpt-4o"),
+    )
 
     # Convert to DPO format
     new_data = []
