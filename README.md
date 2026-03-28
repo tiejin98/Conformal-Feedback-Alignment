@@ -66,16 +66,23 @@ We provide three categories of files: the **training data** (already weighted by
 
 ### Option A: Using Standalone Scripts
 
-Run training and evaluation directly with the scripts in `Quick Start/`:
+All scripts read API keys from the `.env` file in the project root. Set it up first:
+
+```bash
+cp .env.example .env
+# Edit .env: OPENAI_API_KEY=sk-..., HF_TOKEN=hf_...
+```
+
+Then run training and evaluation directly:
 
 ```bash
 cd "Quick Start"
 unzip dpo_data_llama2_withuncertainty.zip
 
-# Step 1: Train — set your HuggingFace token in dpo_ours_train.py first
+# Step 1: Train
 python dpo_ours_train.py
 
-# Step 2: Evaluate — set your OpenAI API key in AI_response_evaluation.py first
+# Step 2: Evaluate (calls GPT-4o, requires OPENAI_API_KEY)
 python AI_response_evaluation.py
 
 # Step 3: Read pre-computed scores (no API key needed)
@@ -118,7 +125,7 @@ The pre-computed scores in the provided `.pkl` files reproduce the following res
 | Base DPO | 6.359 | 7.319 | 5.351 | 7.144 | 6.543 |
 | **RLUF (Ours)** | **6.462** | **7.547** | **5.391** | **7.421** | **6.705** |
 
-RLUF consistently outperforms base DPO across all four dimensions on the summarization task.
+> **Note:** The paper reports Overall scores of 65.68 (Base DPO) vs. 67.30 (RLUF). The numbers above are from a re-run with updated evaluation (GPT-4o), so the absolute values differ slightly, but the relative improvement of RLUF over Base DPO is consistent.
 
 ## Full Pipeline
 

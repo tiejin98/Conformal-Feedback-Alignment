@@ -3,13 +3,14 @@ import re
 import time
 import pickle
 import numpy as np
-import openai
+from dotenv import load_dotenv
 from openai import OpenAI
 from tqdm import tqdm
 # --------------------------------------------------
-# 1. Configure your API key
+# 1. Load API key from .env
 # --------------------------------------------------
-client = OpenAI(api_key="xxx")
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 MODEL = "gpt-4o"
 RATE_LIMIT_PAUSE = 0.3
 
