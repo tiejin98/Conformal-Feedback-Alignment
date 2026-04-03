@@ -12,7 +12,7 @@ Conformal Feedback Alignment — using **Conformal Prediction** to quantify LLM 
 
 - `torch==2.3.0`
 - `transformers==4.51.0`
-- `trl==0.7.0`
+- `trl==0.21.0`
 - `datasets==3.5.0`
 - `openai>=1.0.0`
 - `gensim>=4.3.0`
