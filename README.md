@@ -1,4 +1,4 @@
-# RLUF: Reinforcement Learning with Uncertainty Feedback
+# Conformal Feedback Alignment: Quantifying Answer-Level Reliability for Robust LLM Alignment
 
 [![PyPI version](https://badge.fury.io/py/conformal-feedback-alignment.svg)](https://pypi.org/project/conformal-feedback-alignment/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
