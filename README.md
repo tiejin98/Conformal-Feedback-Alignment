@@ -77,6 +77,7 @@ Then run training and evaluation directly:
 
 ```bash
 cd "Quick Start"
+# For Linux
 unzip dpo_data_llama2_withuncertainty.zip
 
 # Step 1: Train
