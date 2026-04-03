@@ -79,6 +79,8 @@ Then run training and evaluation directly:
 cd "Quick Start"
 # For Linux
 unzip dpo_data_llama2_withuncertainty.zip
+# For Winodws
+Expand-Archive dpo_data_llama2_withuncertainty.zip
 
 # Step 1: Train
 python dpo_ours_train.py
