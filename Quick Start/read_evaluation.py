@@ -5,7 +5,7 @@ rel_list = []
 comp_list = []
 expr_list = []
 overall_list = []
-a = np.load("evaluation_scores_RLUF.pkl",allow_pickle=True)
+a = np.load("evaluation_scores_CFA.pkl",allow_pickle=True)
 print(a)
 key_list = list(a.keys())[:]
 for key in key_list:

@@ -19,7 +19,7 @@ Conformal Feedback Alignment — using **Conformal Prediction** to quantify LLM 
 - `accelerate>=0.30.0`
 
 
-## Installation
+## Installation (Optional)
 
 ```bash
 pip install conformal-feedback-alignment
@@ -70,9 +70,9 @@ We provide three categories of files: the **training data** (already weighted by
 |------|-------------|
 | `dpo_data_llama2_withuncertainty.zip` | DPO training data (104,614 examples) with `prompt`, `chosen`, `rejected`, and `weight` fields — extract before use |
 | `test_dict_question.pkl` | 639 test-set questions |
-| `test_dict_RLUF.pkl` | Model outputs from the cfa-trained model |
+| `test_dict_CFA.pkl` | Model outputs from the cfa-trained model |
 | `test_dict_baseDPO.pkl` | Model outputs from the base DPO model (for comparison) |
-| `evaluation_scores_RLUF.pkl` | Pre-computed GPT-4o evaluation scores for cfa |
+| `evaluation_scores_CFA.pkl` | Pre-computed GPT-4o evaluation scores for cfa |
 | `evaluation_scores_baseDPO.pkl` | Pre-computed GPT-4o evaluation scores for base DPO |
 
 ### Option A: Using Standalone Scripts
@@ -93,7 +93,11 @@ unzip dpo_data_llama2_withuncertainty.zip
 # For Winodws
 Expand-Archive dpo_data_llama2_withuncertainty.zip
 
-# Step 1: Train
+# Step 0: SFT (optional)
+python sft.py
+
+# Step 1: Train (Default using base model without sft)
+# if you want to use sft model to do DPO, please change the path for model_name. Note that all results in our paper are from sft first and then dpo model.
 python dpo_ours_train.py
 
 # Step 2: Evaluate (calls GPT-4o, requires OPENAI_API_KEY)
@@ -119,8 +123,8 @@ mkdir -p outputs/feedback outputs/inference outputs/evaluation
 cd "Quick Start"
 unzip dpo_data_llama2_withuncertainty.zip
 cp dpo_data_llama2_withuncertainty.json ../outputs/feedback/
-cp test_dict_question.pkl test_dict_RLUF.pkl test_dict_baseDPO.pkl ../outputs/inference/
-cp evaluation_scores_RLUF.pkl evaluation_scores_baseDPO.pkl ../outputs/evaluation/
+cp test_dict_question.pkl test_dict_CFA.pkl test_dict_baseDPO.pkl ../outputs/inference/
+cp evaluation_scores_CFA.pkl evaluation_scores_baseDPO.pkl ../outputs/evaluation/
 cd ..
 
 # Train
@@ -139,7 +143,7 @@ The pre-computed scores in the provided `.pkl` files reproduce the following res
 | Base DPO | 6.359 | 7.319 | 5.351 | 7.144 | 6.543 |
 | **CFA (Ours)** | **6.462** | **7.547** | **5.391** | **7.421** | **6.705** |
 
-> **Note:** The paper reports Overall scores of 65.68 (Base DPO) vs. 67.30 (RLUF). The numbers above are from a re-run with updated evaluation (GPT-4o), so the absolute values differ slightly, but the relative improvement of RLUF over Base DPO is consistent.
+> **Note:** The paper reports Overall scores of 65.68 (Base DPO) vs. 67.30 (CFA). The numbers above are from a re-run with updated evaluation (GPT-4o), so the absolute values differ slightly, but the relative improvement of CFA over Base DPO is consistent.
 
 ## Full Pipeline
 
@@ -226,7 +230,7 @@ outputs/
 │   └── dpo_data_llama2_withuncertainty.json
 ├── inference/           # Stage 3b outputs
 │   ├── test_dict_question.pkl
-│   └── test_dict_RLUF.pkl
+│   └── test_dict_CFA.pkl
 └── evaluation/          # Stage 3c outputs
     └── evaluation_scores_llama2.pkl
 ```
