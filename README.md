@@ -62,9 +62,9 @@ pip install -e ".[dev]"
 
 ## Quick Start
 
-The `Quick Start/` folder provides pre-processed sample data so you can **skip Stages 1–2** and directly run training and evaluation. All files are based on **Llama-2-7b** on the **Summarization** task.
+The `Quick Start/` folder provides pre-processed sample data so you can **skip Stages 1–2** and directly run training and evaluation. All files are based on **Llama-2-7b** on the **Summarization** task. Please note that you need to get access to LLama-2-7B from the huggingface and login to your local path if you want to train it from scratch.
 
-We provide three categories of files: the **training data** (already weighted by conformal uncertainty), the **generated outputs** from both RLUF and base DPO models on the test set, and the **evaluation scores** from GPT-4o — so you can either retrain from scratch or directly inspect the results without running any inference.
+We provide three categories of files: the **training data** (already weighted by conformal uncertainty), the **generated outputs** from both CFA and base DPO models on the test set, and the **evaluation scores** from GPT-4o — so you can either retrain from scratch or directly inspect the results without running any inference.
 
 | File | Description |
 |------|-------------|
