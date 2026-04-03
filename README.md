@@ -70,9 +70,9 @@ We provide three categories of files: the **training data** (already weighted by
 |------|-------------|
 | `dpo_data_llama2_withuncertainty.zip` | DPO training data (104,614 examples) with `prompt`, `chosen`, `rejected`, and `weight` fields — extract before use |
 | `test_dict_question.pkl` | 639 test-set questions |
-| `test_dict_RLUF.pkl` | Model outputs from the RLUF-trained model |
+| `test_dict_RLUF.pkl` | Model outputs from the cfa-trained model |
 | `test_dict_baseDPO.pkl` | Model outputs from the base DPO model (for comparison) |
-| `evaluation_scores_RLUF.pkl` | Pre-computed GPT-4o evaluation scores for RLUF |
+| `evaluation_scores_RLUF.pkl` | Pre-computed GPT-4o evaluation scores for cfa |
 | `evaluation_scores_baseDPO.pkl` | Pre-computed GPT-4o evaluation scores for base DPO |
 
 ### Option A: Using Standalone Scripts
@@ -205,7 +205,7 @@ Lower score = higher confidence = more likely in prediction set.
 
 | Step | Command | Description | Output |
 |------|---------|-------------|--------|
-| 3a | `cfa train` | Weighted DPO training (`loss *= weight`) | RLUF model |
+| 3a | `cfa train` | Weighted DPO training (`loss *= weight`) | CFA model |
 | 3b | `cfa infer` | Generate summaries on test set | Predictions (pkl) |
 | 3c | `cfa evaluate` | Score with GPT-4o (Accuracy, Relevance, Completeness, Expression) | Scores (pkl) |
 
