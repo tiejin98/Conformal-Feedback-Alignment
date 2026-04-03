@@ -8,6 +8,17 @@ Conformal Feedback Alignment — using **Conformal Prediction** to quantify LLM 
 
 > **Paper:** [Conformal Feedback Alignment: Quantifying Answer-Level Reliability for Robust LLM Alignment](https://aclanthology.org/2026.findings-eacl.184/) (Findings of EACL 2026)
 
+## Dependencies
+
+- `torch==2.3.0`
+- `transformers==4.51.0`
+- `trl==0.7.0`
+- `datasets==3.5.0`
+- `openai>=1.0.0`
+- `gensim>=4.3.0`
+- `accelerate>=0.30.0`
+
+
 ## Installation
 
 ```bash
@@ -288,15 +299,6 @@ Conformal-Feedback-Alignment/
 └── .env.example
 ```
 
-## Dependencies
-
-- `torch==2.3.0`
-- `transformers==4.51.0`
-- `trl==0.7.0`
-- `datasets==3.5.0`
-- `openai>=1.0.0`
-- `gensim>=4.3.0`
-- `accelerate>=0.30.0`
 
 ## Citation
 
