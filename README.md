@@ -137,7 +137,7 @@ The pre-computed scores in the provided `.pkl` files reproduce the following res
 | Model | Acc | Rel | Comp | Expr | Overall |
 |-------|-----|-----|------|------|---------|
 | Base DPO | 6.359 | 7.319 | 5.351 | 7.144 | 6.543 |
-| **RLUF (Ours)** | **6.462** | **7.547** | **5.391** | **7.421** | **6.705** |
+| **CFA (Ours)** | **6.462** | **7.547** | **5.391** | **7.421** | **6.705** |
 
 > **Note:** The paper reports Overall scores of 65.68 (Base DPO) vs. 67.30 (RLUF). The numbers above are from a re-run with updated evaluation (GPT-4o), so the absolute values differ slightly, but the relative improvement of RLUF over Base DPO is consistent.
 
